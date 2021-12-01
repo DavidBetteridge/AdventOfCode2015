@@ -5,15 +5,15 @@ def read_file() -> List[str]:
     return f.read()
 
 def move(direction, current):
-    if direction == "v":
-      current = (current[0], current[1] - 1)
-    elif direction == "^":
-      current = (current[0], current[1] + 1)
-    elif direction == "<":
-      current = (current[0] - 1, current[1])
-    elif direction == ">":
-      current = (current[0] + 1, current[1])
-    return current
+  if direction == "v":
+    current = (current[0], current[1] - 1)
+  elif direction == "^":
+    current = (current[0], current[1] + 1)
+  elif direction == "<":
+    current = (current[0] - 1, current[1])
+  elif direction == ">":
+    current = (current[0] + 1, current[1])
+  return current
 
 def common(number_of_workers: int):
   directions = read_file()
