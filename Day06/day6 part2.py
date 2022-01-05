@@ -1,9 +1,8 @@
-from collections import Counter
 from typing import DefaultDict, List
 
 
 def read_file() -> List[str]:
-  with open('Day06/data.txt') as f:
+  with open('C:\Personal\AdventOfCode2015\Day06\data.txt') as f:
     return f.readlines()
 
 lines = read_file()
