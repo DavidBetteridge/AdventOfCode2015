@@ -67,6 +67,9 @@ for connection in connections:
     signals[connection.output] = int(connection.lhs)
     to_process.append(connection.output)
 
+# For part 2
+signals["b"] = 46065
+
 while len(to_process) > 0:
   latest_output = to_process.pop()
   if latest_output not in done:
@@ -95,5 +98,5 @@ while len(to_process) > 0:
           signals[connection_to_test.output] = read_value(connection_to_test.lhs)
           to_process.append(connection_to_test.output)
 
-print(signals["a"])  #46065
+print(signals["a"])  #46065  14134
 
