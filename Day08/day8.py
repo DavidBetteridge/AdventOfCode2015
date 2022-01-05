@@ -1,3 +1,4 @@
+from collections import Counter
 from typing import List
 
 
@@ -20,8 +21,9 @@ def in_memory_size(line: str) -> int:
   return len(base) - number_of_quotes - number_of_backslashes - (number_of_hex * 3)
 
 def encode(line: str) -> int:
-  number_of_quotes = (len(line) - len(line.replace('\"', "")))
-  number_of_backslashes = (len(line) - len(line.replace('\\', "")))
+  counters = Counter(line)
+  number_of_quotes = counters["\""]
+  number_of_backslashes = counters["\\"]
   return len(line) + 2 + number_of_backslashes + number_of_quotes
 
 
