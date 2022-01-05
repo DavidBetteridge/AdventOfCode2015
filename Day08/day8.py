@@ -19,8 +19,13 @@ def in_memory_size(line: str) -> int:
 
   return len(base) - number_of_quotes - number_of_backslashes - (number_of_hex * 3)
 
+def encode(line: str) -> int:
+  number_of_quotes = (len(line) - len(line.replace('\"', "")))
+  number_of_backslashes = (len(line) - len(line.replace('\\', "")))
+  return len(line) + 2 + number_of_backslashes + number_of_quotes
+
 
 lines = read_file()
-print(sum([len(line) - in_memory_size(line) for line in lines]))
-  
-#1333
+print(sum([len(line) - in_memory_size(line) for line in lines])) #1333
+
+print(sum([encode(line) - len(line) for line in lines])) #2046
