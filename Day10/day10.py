@@ -18,6 +18,6 @@ def expand(input: str) -> str:
 
 
 input = "1321131112"
-for _ in range(40):
+for _ in range(50):
   input = expand(input)
 print(len(input))
