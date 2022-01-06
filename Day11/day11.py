@@ -21,10 +21,13 @@ def valid_password(suggested_password: str) -> bool:
   for i in range(len(suggested_password)-2):
     i0 = alphabet.index(suggested_password[i])
     i1 = alphabet.index(suggested_password[i+1])
-    i2 = alphabet.index(suggested_password[i+2])
-    if i0 + 1 == i1 and i1 + 1 == i2:
-      rule1 = True
-      break
+    if i0 + 1 == i1:
+      i2 = alphabet.index(suggested_password[i+2])
+      if i1 + 1 == i2:
+        rule1 = True
+        break
+  if not rule1: return False
+
 
   rule2 = False
   pair1 = ""
@@ -43,7 +46,7 @@ input = next_password("cqjxxyzz")
 while not valid_password(input):
   input = next_password(input)
 
-print(input)  
+print(input)  #cqkaabcc
 
 
 
