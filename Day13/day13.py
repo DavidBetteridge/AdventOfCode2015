@@ -41,6 +41,8 @@ def solve():
       cost = -int(line.split(" ")[3])
 
     G.add_edge(person1, person2, cost = cost) 
+    G.add_edge(person1, "ME", cost = 0) #Part 2
+    G.add_edge("ME", person1, cost = 0) #Part 2
 
   first_seat = lines[0][:lines[0].index(" ")]
   seated = [first_seat]
