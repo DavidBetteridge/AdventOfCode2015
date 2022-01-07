@@ -31,8 +31,17 @@ def next(grid: dict) -> dict:
           new_grid[(c,r)] = 1
   return new_grid
 
+def switch_on_corners(grid, number_of_rows, number_of_columns):
+    grid[0,0] = 1
+    grid[0,number_of_rows-1] = 1
+    grid[number_of_columns-1,0] = 1
+    grid[number_of_columns-1,number_of_rows-1] = 1
+
+
+switch_on_corners(grid, number_of_rows, number_of_columns)
 for _ in range(100):
   grid = next(grid)
+  switch_on_corners(grid, number_of_rows, number_of_columns) 
 
-print(len(grid))
+print(len(grid)) #924
 
