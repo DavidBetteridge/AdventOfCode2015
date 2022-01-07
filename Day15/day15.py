@@ -43,6 +43,9 @@ for q0 in range(1, 101):
       durability = max(0, sum([ingredient.durability * ingredient.quantity for ingredient in ingredients]))
       flavor = max(0, sum([ingredient.flavor * ingredient.quantity for ingredient in ingredients]))
       texture = max(0, sum([ingredient.texture * ingredient.quantity for ingredient in ingredients]))
+      calories = max(0, sum([ingredient.calories * ingredient.quantity for ingredient in ingredients]))
       total = capacity * durability * flavor * texture
-      best_total = max(best_total, total)
+
+      if calories == 500:  #Part 2
+        best_total = max(best_total, total)
 print(best_total)
