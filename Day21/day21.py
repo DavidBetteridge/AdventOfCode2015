@@ -49,6 +49,8 @@ rings = [
 ]
 
 lowest_gold = 9999999999
+highest_gold = 0
+
 for weapon in weapons:
   for armor in armors:
     for ring0 in rings:
@@ -61,5 +63,8 @@ for weapon in weapons:
           boss = Player(100, 8, 2)
           if does_player_wins(player, boss):
             lowest_gold = min(lowest_gold, gold)
+          else:
+            highest_gold = max(highest_gold, gold)
 
 print(lowest_gold)  #91
+print(highest_gold)  #158
