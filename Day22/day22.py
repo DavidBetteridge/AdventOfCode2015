@@ -1,5 +1,6 @@
-from typing import List, Tuple
 import dataclasses
+from typing import List, Tuple
+from copy import copy
 
 @dataclasses.dataclass(frozen=True)
 class Player:
@@ -20,6 +21,14 @@ spells = [
   "Recharge"
 ]
 
+cost = {
+  "Magic Missile" : 53,
+  "Drain" : 73,
+  "Shield" : 113,
+  "Poison" : 173,
+  "Recharge" : 229,
+}
+
 def apply_spells(players_inventory: dict, player: Player, boss: Boss) -> Tuple[Player, Boss]:
   to_remove = []
   for spell in players_inventory:
@@ -35,47 +44,55 @@ def apply_spells(players_inventory: dict, player: Player, boss: Boss) -> Tuple[P
       players_inventory.pop(spell)
   return player, boss
 
-# def available_spells() -> List[str]:
-#   #TODO Take funds into account
-#   return [spell for spell in spells if spell not in players_inventory ]
+def available_spells(player: Player, inventory: dict) -> List[str]:
+  return [spell for spell in spells if spell not in inventory and cost[spell] <= player.mana ]
+
+
+def next_round(player: Player, boss: Boss, current_inventory: dict, spent, wins: list):
+  available = available_spells(player, current_inventory)
+  if len(available) == 0: return   #Boss has won
+  
+  for spell_to_use in available:
+     # Players turn
+    inventory = copy(current_inventory)  
+    player, boss = apply_spells(inventory, player, boss)
+
+    spell_cost = cost[spell_to_use]
+    player = Player(player.hit_points,player.mana-spell_cost)
+
+    if spell_to_use == "Magic Missile":
+      boss = Boss(boss.hit_points - 4, boss.damage)
+    elif spell_to_use == "Drain":
+      player = Player(player.hit_points+2,player.mana)
+      boss = Boss(boss.hit_points - 2, boss.damage)  
+    elif spell_to_use == "Shield":
+      inventory["Shield"] = 6
+    elif spell_to_use == "Poison":
+      inventory["Poison"] = 6
+    elif spell_to_use == "Recharge":
+      inventory["Recharge"] = 5
+
+    if boss.hit_points <= 0: 
+      wins.append(spent + spell_cost)
+      return  #Player won
+
+    # Boss's turn
+    armor = 7 if "Shield" in inventory else 0
+    player, boss = apply_spells(inventory, player, boss)
+    if boss.hit_points <= 0:
+      wins.append(spent + spell_cost)
+      return  #Player won      
+    damage = max(1, boss.damage - armor)
+    player = Player(player.hit_points-damage,player.mana) 
+    if player.hit_points <= 0: return  #Boss won
+
+    # Keep playing
+    next_round(player, boss, inventory, spent + spell_cost, wins)
+
 
 players_inventory = {}  #(Name: Duration remaining)
 player = Player(10, 250)
 boss = Boss(13, 8)
-
-for turn in range(2):
-
-  # Players turn
-  player, boss = apply_spells(players_inventory, player, boss)
-  spell_to_use = "Poison" if turn == 0 else "Magic Missile"
-
-  if spell_to_use == "Magic Missile":
-    player = Player(player.hit_points,player.mana-53)
-    boss = Boss(boss.hit_points - 4, boss.damage)
-  elif spell_to_use == "Drain":
-    player = Player(player.hit_points+2,player.mana-73)
-    boss = Boss(boss.hit_points - 2, boss.damage)  
-  elif spell_to_use == "Shield":
-    player = Player(player.hit_points,player.mana-113)
-    players_inventory["Shield"] = 6
-  elif spell_to_use == "Poison":
-    players_inventory["Poison"] = 6
-    player = Player(player.hit_points,player.mana-173) 
-  elif spell_to_use == "Recharge":
-    players_inventory["Recharge"] = 5
-    player = Player(player.hit_points,player.mana-229) 
-
-
-  # Boss's turn
-  armor = 7 if "Shield" in players_inventory else 0
-  player, boss = apply_spells(players_inventory, player, boss)
-  if boss.hit_points <= 0:
-    "Player wins"
-    break
-  damage = max(1, boss.damage - armor)
-  player = Player(player.hit_points-damage,player.mana) 
-
-
-print(player)
-print(boss)
-print(players_inventory)
+wins = []
+next_round(player, boss, players_inventory, 0, wins)
+print(min(wins))
