@@ -1,6 +1,7 @@
 import dataclasses
 from typing import List, Tuple
-from copy import deepcopy
+from copy import copy
+from functools import lru_cache
 
 @dataclasses.dataclass(frozen=True)
 class Player:
@@ -47,17 +48,23 @@ def apply_spells(players_inventory: dict, player: Player, boss: Boss) -> Tuple[P
 def available_spells(player: Player, inventory: dict) -> List[str]:
   return [spell for spell in spells if spell not in inventory and cost[spell] <= player.mana ]
 
+lowest_cost = 1000000
 
-def next_round(current_player: Player, current_boss: Boss, current_inventory: dict, spent, wins: list):
+def next_round(current_player: Player, current_boss: Boss, current_inventory: dict, spent):
+  global lowest_cost
+  current_player = Player(current_player.hit_points-1,current_player.mana) #Part2
+  if current_player.hit_points <= 0: return #Boss has won
+
+  current_player, current_boss = apply_spells(current_inventory, current_player, current_boss)
+
   available = available_spells(current_player, current_inventory)
   if len(available) == 0: return   #Boss has won
-  
+
   for spell_to_use in available:
      # Players turn
-    inventory = deepcopy(current_inventory)  
-    player = deepcopy(current_player)  
-    boss = deepcopy(current_boss)  
-    player, boss = apply_spells(inventory, player, boss)
+    inventory = copy(current_inventory)  
+    player = copy(current_player)  
+    boss = copy(current_boss)  
 
     spell_cost = cost[spell_to_use]
     player = Player(player.hit_points,player.mana-spell_cost)
@@ -75,29 +82,32 @@ def next_round(current_player: Player, current_boss: Boss, current_inventory: di
       inventory["Recharge"] = 5
 
     if boss.hit_points <= 0: 
-      wins.append(spent + spell_cost)
-      print(min(wins))
+      if spent + spell_cost < lowest_cost:
+        lowest_cost = spent + spell_cost
+        print(lowest_cost)
       continue  #Player won
 
     # Boss's turn
     armor = 7 if "Shield" in inventory else 0
     player, boss = apply_spells(inventory, player, boss)
     if boss.hit_points <= 0:
-      wins.append(spent + spell_cost)
-      print(min(wins))
+      if spent + spell_cost < lowest_cost:
+        lowest_cost = spent + spell_cost
+        print(lowest_cost)
       continue  #Player won      
     damage = max(1, boss.damage - armor)
     player = Player(player.hit_points-damage,player.mana) 
     if player.hit_points <= 0: continue  #Boss won
 
     # Keep playing
-    next_round(player, boss, inventory, spent + spell_cost, wins)
+    next_round(player, boss, inventory, spent + spell_cost)
 
 
 players_inventory = {}  #(Name: Duration remaining)
 player = Player(50, 500)
 boss = Boss(55, 8)
-wins = []
-next_round(player, boss, players_inventory, 0, wins)
-print(wins)
-print(min(wins))  #953
+next_round(player, boss, players_inventory, 0)
+print(lowest_cost)
+
+# Part 1 - 953
+# Part 2 - 1289
