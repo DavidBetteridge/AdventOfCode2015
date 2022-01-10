@@ -1,12 +1,3 @@
-# spells = [
-#   { "name": "Magic Missile", "cost": 53, "damage": 4, "hit_points": 0, "duration": 0, "armor": 0 },
-#   { "name": "Drain", "cost": 73, "damage": 2, "hit_points": 2, "duration": 0, "armor": 0 },
-#   { "name": "Shield", "cost": 113, "damage": 0, "hit_points": 0, "duration": 6, "armor": 7 },
-#   { "name": "Poison", "cost": 173, "damage": 3, "hit_points": 0, "duration": 6, "armor": 0 },
-#   { "name": "Recharge", "cost": 229, "damage": 0, "hit_points": 0, "duration": 5, "armor": 0, "mana": 101 },
-# ]
-
-
 from typing import List, Tuple
 import dataclasses
 
@@ -14,8 +5,12 @@ import dataclasses
 class Player:
   hit_points: int
   mana: int
-  armor: int
+
+@dataclasses.dataclass(frozen=True)
+class Boss:
+  hit_points: int
   damage : int
+
 
 spells = [
   "Magic Missile",
@@ -25,24 +20,13 @@ spells = [
   "Recharge"
 ]
 
-players_inventory = {}  #(Name: Duration remaining)
-
-def available_spells() -> List[str]:
-  #TODO Take funds into account
-  return [spell for spell in spells if spell not in players_inventory ]
-
-def attack(attacker: Player,  defender: Player) -> Player:
-  #TODO: Shield 
-  damage = max(1, attacker.damage - defender.armor)
-  return Player(defender.hit_points - damage,  defender.mana, defender.armor, defender.damage)
-
-def apply_spells(players_inventory: dict, player: Player, boss: Player) -> Tuple[Player, Player]:
+def apply_spells(players_inventory: dict, player: Player, boss: Boss) -> Tuple[Player, Boss]:
   to_remove = []
   for spell in players_inventory:
     if spell == "Poison":
-      boss = Player(boss.hit_points-3,boss.mana,boss.armor,boss.damage)
+      boss = Boss(boss.hit_points-3,boss.damage)
     if spell == "Recharge":
-      player = Player(player.hit_points,player.mana+101,player.armor,player.damage)      
+      player = Player(player.hit_points,player.mana+101)      
     players_inventory[spell] -= 1
     if players_inventory[spell] == 0:
       to_remove.append(spell)
@@ -51,32 +35,45 @@ def apply_spells(players_inventory: dict, player: Player, boss: Player) -> Tuple
       players_inventory.pop(spell)
   return player, boss
 
+# def available_spells() -> List[str]:
+#   #TODO Take funds into account
+#   return [spell for spell in spells if spell not in players_inventory ]
+
+players_inventory = {}  #(Name: Duration remaining)
+player = Player(10, 250)
+boss = Boss(13, 8)
+
+for turn in range(2):
+
+  # Players turn
+  player, boss = apply_spells(players_inventory, player, boss)
+  spell_to_use = "Poison" if turn == 0 else "Magic Missile"
+
+  if spell_to_use == "Magic Missile":
+    player = Player(player.hit_points,player.mana-53)
+    boss = Boss(boss.hit_points - 4, boss.damage)
+  elif spell_to_use == "Drain":
+    player = Player(player.hit_points+2,player.mana-73)
+    boss = Boss(boss.hit_points - 2, boss.damage)  
+  elif spell_to_use == "Shield":
+    player = Player(player.hit_points,player.mana-113)
+    players_inventory["Shield"] = 6
+  elif spell_to_use == "Poison":
+    players_inventory["Poison"] = 6
+    player = Player(player.hit_points,player.mana-173) 
+  elif spell_to_use == "Recharge":
+    players_inventory["Recharge"] = 5
+    player = Player(player.hit_points,player.mana-229) 
 
 
-player = Player(10, 250, 0, 0)
-boss = Player(13,0,0,8)
-
-# Player casts poison
-players_inventory["Poison"] = 6
-cost = 173
-player = Player(player.hit_points,player.mana-cost,player.armor,player.damage)
-
-# Boss's turn
-player, boss = apply_spells(players_inventory, player, boss)
-player = attack(boss, player)
-
-
-# Player casts magic missile
-player, boss = apply_spells(players_inventory, player, boss)
-cost = 53
-player = Player(player.hit_points,player.mana-cost,player.armor,player.damage)
-boss = Player(boss.hit_points - 4,  boss.mana, boss.armor, boss.damage)
-
-# Boss's turn
-player, boss = apply_spells(players_inventory, player, boss)
-if boss.hit_points <= 0:
-  print("Player wins")
-
+  # Boss's turn
+  armor = 7 if "Shield" in players_inventory else 0
+  player, boss = apply_spells(players_inventory, player, boss)
+  if boss.hit_points <= 0:
+    "Player wins"
+    break
+  damage = max(1, boss.damage - armor)
+  player = Player(player.hit_points-damage,player.mana) 
 
 
 print(player)
