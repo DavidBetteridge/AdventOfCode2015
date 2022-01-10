@@ -1,6 +1,6 @@
 import dataclasses
 from typing import List, Tuple
-from copy import copy
+from copy import deepcopy
 
 @dataclasses.dataclass(frozen=True)
 class Player:
@@ -14,19 +14,19 @@ class Boss:
 
 
 spells = [
-  "Magic Missile",
-  "Drain",
-  "Shield",
   "Poison",
-  "Recharge"
+  "Recharge",
+  "Shield",
+  "Drain",
+  "Magic Missile",
 ]
 
 cost = {
+  "Recharge" : 229,
+  "Poison" : 173,
   "Magic Missile" : 53,
   "Drain" : 73,
   "Shield" : 113,
-  "Poison" : 173,
-  "Recharge" : 229,
 }
 
 def apply_spells(players_inventory: dict, player: Player, boss: Boss) -> Tuple[Player, Boss]:
@@ -40,21 +40,23 @@ def apply_spells(players_inventory: dict, player: Player, boss: Boss) -> Tuple[P
     if players_inventory[spell] == 0:
       to_remove.append(spell)
 
-    for spell in to_remove:
-      players_inventory.pop(spell)
+  for spell in to_remove:
+    players_inventory.pop(spell)
   return player, boss
 
 def available_spells(player: Player, inventory: dict) -> List[str]:
   return [spell for spell in spells if spell not in inventory and cost[spell] <= player.mana ]
 
 
-def next_round(player: Player, boss: Boss, current_inventory: dict, spent, wins: list):
-  available = available_spells(player, current_inventory)
+def next_round(current_player: Player, current_boss: Boss, current_inventory: dict, spent, wins: list):
+  available = available_spells(current_player, current_inventory)
   if len(available) == 0: return   #Boss has won
   
   for spell_to_use in available:
      # Players turn
-    inventory = copy(current_inventory)  
+    inventory = deepcopy(current_inventory)  
+    player = deepcopy(current_player)  
+    boss = deepcopy(current_boss)  
     player, boss = apply_spells(inventory, player, boss)
 
     spell_cost = cost[spell_to_use]
@@ -74,25 +76,28 @@ def next_round(player: Player, boss: Boss, current_inventory: dict, spent, wins:
 
     if boss.hit_points <= 0: 
       wins.append(spent + spell_cost)
-      return  #Player won
+      print(min(wins))
+      continue  #Player won
 
     # Boss's turn
     armor = 7 if "Shield" in inventory else 0
     player, boss = apply_spells(inventory, player, boss)
     if boss.hit_points <= 0:
       wins.append(spent + spell_cost)
-      return  #Player won      
+      print(min(wins))
+      continue  #Player won      
     damage = max(1, boss.damage - armor)
     player = Player(player.hit_points-damage,player.mana) 
-    if player.hit_points <= 0: return  #Boss won
+    if player.hit_points <= 0: continue  #Boss won
 
     # Keep playing
     next_round(player, boss, inventory, spent + spell_cost, wins)
 
 
 players_inventory = {}  #(Name: Duration remaining)
-player = Player(10, 250)
-boss = Boss(13, 8)
+player = Player(50, 500)
+boss = Boss(55, 8)
 wins = []
 next_round(player, boss, players_inventory, 0, wins)
-print(min(wins))
+print(wins)
+print(min(wins))  #953
