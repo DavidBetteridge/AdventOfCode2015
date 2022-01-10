@@ -37,7 +37,7 @@ packages = [
   113
 ]
 
-target_weight = sum(packages) / 3
+target_weight = sum(packages) / 4
 print(target_weight)
 
 results = DefaultDict(list)
